@@ -10,3 +10,45 @@
 ```
 dotnet add package Soenneker.Utils.Case
 ```
+
+## Usage
+
+```csharp
+using Soenneker.Utils.Case;
+```
+
+All conversions use a single tokenizer internally, then format into the target case.
+
+### Core methods
+
+- `ToKebab(ReadOnlySpan<char>)`
+- `ToSnake(ReadOnlySpan<char>)`
+- `ToUpperSnake(ReadOnlySpan<char>)`
+- `ToDot(ReadOnlySpan<char>)`
+- `ToFlat(ReadOnlySpan<char>)`
+- `ToPath(ReadOnlySpan<char>)`
+- `ToSpace(ReadOnlySpan<char>)`
+- `ToTrain(ReadOnlySpan<char>)`
+- `ToPascal(ReadOnlySpan<char>)`
+- `ToCamel(ReadOnlySpan<char>)`
+- `ToTitle(ReadOnlySpan<char>, CultureInfo? culture = null)`
+- `ToTitle(string? value, CultureInfo? culture = null)`
+- `NormalizeKebab(ReadOnlySpan<char>)`
+
+### Example
+
+```csharp
+const string input = "HTTPServer_v2 parser";
+
+CaseUtil.ToKebab(input);      // "http-server-v2-parser"
+CaseUtil.ToSnake(input);      // "http_server_v2_parser"
+CaseUtil.ToUpperSnake(input); // "HTTP_SERVER_V2_PARSER"
+CaseUtil.ToDot(input);        // "http.server.v2.parser"
+CaseUtil.ToFlat(input);       // "httpserverv2parser"
+CaseUtil.ToPath(input);       // "http/server/v2/parser"
+CaseUtil.ToSpace(input);      // "http server v2 parser"
+CaseUtil.ToTrain(input);      // "HTTP-Server-V2-Parser"
+CaseUtil.ToPascal(input);     // "HTTPServerV2Parser"
+CaseUtil.ToCamel(input);      // "httpServerV2Parser"
+CaseUtil.ToTitle(input);      // "HTTP Server V2 Parser"
+```

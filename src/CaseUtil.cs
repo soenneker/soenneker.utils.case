@@ -1,6 +1,9 @@
 using Soenneker.Extensions.Char;
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using Soenneker.Utils.Case.Dtos;
+using Soenneker.Utils.Case.Enums;
 
 namespace Soenneker.Utils.Case;
 
@@ -9,101 +12,436 @@ namespace Soenneker.Utils.Case;
 /// </summary>
 public static partial class CaseUtil
 {
-    
-    private static int ComputeOutputLength(ReadOnlySpan<char> src)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsTokenChar(char c)
     {
-        var len = 0;
+        return c.IsLetterFast() || c.IsDigitFast();
+    }
 
-        var prevOutWasSpace = true;
-        var prevSig = '\0';
-        var prevSigHad = false;
+    private static bool TryReadToken(ReadOnlySpan<char> input, ref int index, out Token token)
+    {
+        int len = input.Length;
 
-        for (var i = 0; i < src.Length; i++)
+        while (index < len)
         {
-            char c = src[i];
+            char c = input[index];
 
-            if (c.IsTokenSeparator())
-            {
-                if (!prevOutWasSpace && len > 0)
-                {
-                    len++; // space
-                    prevOutWasSpace = true;
-                    prevSigHad = false;
-                }
-                continue;
-            }
+            if (IsTokenChar(c))
+                break;
 
-            bool isLetter = c.IsLetterFast();
-            bool isDigit = !isLetter && c.IsDigitFast();
-            if (!isLetter && !isDigit)
-            {
-                if (!prevOutWasSpace && len > 0)
-                {
-                    len++;
-                    prevOutWasSpace = true;
-                    prevSigHad = false;
-                }
-                continue;
-            }
-
-            char next = (i + 1 < src.Length) ? src[i + 1] : '\0';
-            bool nextIsLower = next != '\0' && !next.IsTokenSeparator() && next.IsLowerFast();
-
-            var needSpace = false;
-
-            if (!prevOutWasSpace && prevSigHad)
-            {
-                bool currIsUpper = c.IsUpperFast();
-                bool prevIsLower = prevSig.IsLowerFast();
-                bool prevIsUpper = prevSig.IsUpperFast();
-                bool prevIsDigit = prevSig.IsDigitFast();
-
-                bool currIsDigit = isDigit;
-
-                if (currIsUpper && prevIsLower)
-                    needSpace = true;
-                else if (currIsUpper && prevIsUpper && nextIsLower)
-                    needSpace = true;
-                else if (currIsDigit && !prevIsDigit)
-                    needSpace = true;
-                else if (!currIsDigit && prevIsDigit)
-                    needSpace = true;
-            }
-
-            if (needSpace)
-            {
-                len++; // space
-                prevOutWasSpace = true;
-                prevSigHad = false;
-            }
-
-            len++; // the character itself
-
-            prevOutWasSpace = false;
-            prevSig = c;
-            prevSigHad = true;
+            index++;
         }
 
-        // Trim trailing space if we ended with one
-        if (len > 0)
+        if (index >= len)
         {
-            // Only possible if last processed input was boundary/punct which we collapse into space,
-            // but we don't emit trailing spaces unless len>0 and prevOutWasSpace false.
-            // Kept for safety if rules change.
+            token = default;
+            return false;
         }
 
-        return len;
+        int start = index;
+        char first = input[index];
+
+        // Keep common version markers together: v2, v10, V3.
+        // Other letter/digit boundaries still split (e.g., X + 509).
+        if ((first == 'v' || first == 'V') && start + 1 < len && input[start + 1].IsDigitFast())
+        {
+            index += 2;
+            while (index < len && input[index].IsDigitFast())
+            {
+                index++;
+            }
+
+            token = new Token(start, index - start, TokenKind.Word);
+            return true;
+        }
+
+        if (first.IsDigitFast())
+        {
+            index++;
+            while (index < len && input[index].IsDigitFast())
+            {
+                index++;
+            }
+
+            token = new Token(start, index - start, TokenKind.Number);
+            return true;
+        }
+
+        if (first.IsUpperFast())
+        {
+            index++;
+
+            while (index < len && input[index].IsUpperFast())
+            {
+                index++;
+            }
+
+            int upperRunLength = index - start;
+
+            if (upperRunLength > 1 && index < len && input[index].IsLowerFast())
+            {
+                index--;
+                token = new Token(start, index - start, TokenKind.Acronym);
+                return true;
+            }
+
+            if (upperRunLength > 1)
+            {
+                token = new Token(start, upperRunLength, TokenKind.Acronym);
+                return true;
+            }
+
+            while (index < len && input[index].IsLowerFast())
+            {
+                index++;
+            }
+
+            token = new Token(start, index - start, TokenKind.Word);
+            return true;
+        }
+
+        index++;
+        while (index < len && input[index].IsLowerFast())
+        {
+            index++;
+        }
+
+        token = new Token(start, index - start, TokenKind.Word);
+        return true;
+    }
+
+    private static void ComputeTokenStats(ReadOnlySpan<char> input, out int tokenCount, out int charCount)
+    {
+        tokenCount = 0;
+        charCount = 0;
+
+        var idx = 0;
+        while (TryReadToken(input, ref idx, out Token token))
+        {
+            tokenCount++;
+            charCount += token.Length;
+        }
+    }
+
+    private static string WriteSeparatedLower(ReadOnlySpan<char> input, char separator)
+    {
+        ComputeTokenStats(input, out int tokenCount, out int charCount);
+        if (tokenCount == 0)
+            return string.Empty;
+
+        int outputLength = charCount + tokenCount - 1;
+        var state = (Source: input.ToString(), Separator: separator);
+
+        return string.Create(outputLength, state, static (dest, st) =>
+        {
+            ReadOnlySpan<char> src = st.Source.AsSpan();
+            var di = 0;
+            var idx = 0;
+            var wroteToken = false;
+
+            while (TryReadToken(src, ref idx, out Token token))
+            {
+                if (wroteToken)
+                    dest[di++] = st.Separator;
+
+                int end = token.Start + token.Length;
+                for (int i = token.Start; i < end; i++)
+                {
+                    dest[di++] = src[i].ToAsciiLower();
+                }
+
+                wroteToken = true;
+            }
+        });
+    }
+
+    private static string WriteSeparatedUpper(ReadOnlySpan<char> input, char separator)
+    {
+        ComputeTokenStats(input, out int tokenCount, out int charCount);
+        if (tokenCount == 0)
+            return string.Empty;
+
+        int outputLength = charCount + tokenCount - 1;
+        var state = (Source: input.ToString(), Separator: separator);
+
+        return string.Create(outputLength, state, static (dest, st) =>
+        {
+            ReadOnlySpan<char> src = st.Source.AsSpan();
+            var di = 0;
+            var idx = 0;
+            var wroteToken = false;
+
+            while (TryReadToken(src, ref idx, out Token token))
+            {
+                if (wroteToken)
+                    dest[di++] = st.Separator;
+
+                int end = token.Start + token.Length;
+                for (int i = token.Start; i < end; i++)
+                {
+                    dest[di++] = src[i].ToAsciiUpper();
+                }
+
+                wroteToken = true;
+            }
+        });
+    }
+
+    private static string WriteFlatLower(ReadOnlySpan<char> input)
+    {
+        ComputeTokenStats(input, out _, out int charCount);
+        if (charCount == 0)
+            return string.Empty;
+
+        return string.Create(charCount, input.ToString(), static (dest, source) =>
+        {
+            ReadOnlySpan<char> src = source.AsSpan();
+            var di = 0;
+            var idx = 0;
+
+            while (TryReadToken(src, ref idx, out Token token))
+            {
+                int end = token.Start + token.Length;
+                for (int i = token.Start; i < end; i++)
+                {
+                    dest[di++] = src[i].ToAsciiLower();
+                }
+            }
+        });
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int CountNonDash(ReadOnlySpan<char> input)
+    private static string WriteKebabLower(ReadOnlySpan<char> input)
     {
-        int count = 0;
-        for (int i = 0; i < input.Length; i++)
-        {
-            if (input[i] != '-')
-                count++;
-        }
-        return count;
+        return WriteSeparatedLower(input, '-');
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string WriteSnakeLower(ReadOnlySpan<char> input)
+    {
+        return WriteSeparatedLower(input, '_');
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string WriteUpperSnake(ReadOnlySpan<char> input)
+    {
+        return WriteSeparatedUpper(input, '_');
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string WriteDotLower(ReadOnlySpan<char> input)
+    {
+        return WriteSeparatedLower(input, '.');
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string WritePathLower(ReadOnlySpan<char> input)
+    {
+        return WriteSeparatedLower(input, '/');
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string WriteSpaceLower(ReadOnlySpan<char> input)
+    {
+        return WriteSeparatedLower(input, ' ');
+    }
+
+    private static string WriteTitle(ReadOnlySpan<char> input, CultureInfo culture)
+    {
+        ComputeTokenStats(input, out int tokenCount, out int charCount);
+        if (tokenCount == 0)
+            return string.Empty;
+
+        int outputLength = charCount + tokenCount - 1;
+
+        (string Source, CultureInfo Culture) state = (Source: input.ToString(), Culture: culture);
+
+        return string.Create(outputLength, state, static (dest, st) =>
+        {
+            ReadOnlySpan<char> src = st.Source.AsSpan();
+            CultureInfo ci = st.Culture;
+
+            var di = 0;
+            var idx = 0;
+            var wroteToken = false;
+
+            while (TryReadToken(src, ref idx, out Token token))
+            {
+                if (wroteToken)
+                    dest[di++] = ' ';
+
+                int end = token.Start + token.Length;
+
+                if (token.Kind == TokenKind.Acronym)
+                {
+                    for (int i = token.Start; i < end; i++)
+                    {
+                        char c = src[i];
+                        dest[di++] = c <= 127 ? c.ToAsciiUpper() : char.ToUpper(c, ci);
+                    }
+                }
+                else if (token.Kind == TokenKind.Number)
+                {
+                    for (int i = token.Start; i < end; i++)
+                    {
+                        dest[di++] = src[i];
+                    }
+                }
+                else
+                {
+                    char first = src[token.Start];
+                    dest[di++] = first <= 127 ? first.ToAsciiUpper() : char.ToUpper(first, ci);
+
+                    for (int i = token.Start + 1; i < end; i++)
+                    {
+                        char c = src[i];
+                        dest[di++] = c <= 127 ? c.ToAsciiLower() : char.ToLower(c, ci);
+                    }
+                }
+
+                wroteToken = true;
+            }
+        });
+    }
+
+    private static string WritePascal(ReadOnlySpan<char> input)
+    {
+        ComputeTokenStats(input, out int tokenCount, out int charCount);
+        if (tokenCount == 0)
+            return string.Empty;
+
+        return string.Create(charCount, input.ToString(), static (dest, source) =>
+        {
+            ReadOnlySpan<char> src = source.AsSpan();
+            var di = 0;
+            var idx = 0;
+
+            while (TryReadToken(src, ref idx, out Token token))
+            {
+                int end = token.Start + token.Length;
+
+                if (token.Kind == TokenKind.Acronym)
+                {
+                    for (int i = token.Start; i < end; i++)
+                    {
+                        dest[di++] = src[i].ToAsciiUpper();
+                    }
+                }
+                else if (token.Kind == TokenKind.Number)
+                {
+                    for (int i = token.Start; i < end; i++)
+                    {
+                        dest[di++] = src[i];
+                    }
+                }
+                else
+                {
+                    dest[di++] = src[token.Start].ToAsciiUpper();
+
+                    for (int i = token.Start + 1; i < end; i++)
+                    {
+                        dest[di++] = src[i].ToAsciiLower();
+                    }
+                }
+            }
+        });
+    }
+
+    private static string WriteCamel(ReadOnlySpan<char> input)
+    {
+        ComputeTokenStats(input, out int tokenCount, out int charCount);
+        if (tokenCount == 0)
+            return string.Empty;
+
+        return string.Create(charCount, input.ToString(), static (dest, source) =>
+        {
+            ReadOnlySpan<char> src = source.AsSpan();
+            var di = 0;
+            var idx = 0;
+            var tokenIndex = 0;
+
+            while (TryReadToken(src, ref idx, out Token token))
+            {
+                int end = token.Start + token.Length;
+
+                if (tokenIndex == 0)
+                {
+                    for (int i = token.Start; i < end; i++)
+                    {
+                        dest[di++] = src[i].ToAsciiLower();
+                    }
+                }
+                else if (token.Kind == TokenKind.Number)
+                {
+                    for (int i = token.Start; i < end; i++)
+                    {
+                        dest[di++] = src[i];
+                    }
+                }
+                else
+                {
+                    dest[di++] = src[token.Start].ToAsciiUpper();
+
+                    for (int i = token.Start + 1; i < end; i++)
+                    {
+                        dest[di++] = src[i].ToAsciiLower();
+                    }
+                }
+
+                tokenIndex++;
+            }
+        });
+    }
+
+    private static string WriteTrain(ReadOnlySpan<char> input)
+    {
+        ComputeTokenStats(input, out int tokenCount, out int charCount);
+        if (tokenCount == 0)
+            return string.Empty;
+
+        int outputLength = charCount + tokenCount - 1;
+
+        return string.Create(outputLength, input.ToString(), static (dest, source) =>
+        {
+            ReadOnlySpan<char> src = source.AsSpan();
+            var di = 0;
+            var idx = 0;
+            var wroteToken = false;
+
+            while (TryReadToken(src, ref idx, out Token token))
+            {
+                if (wroteToken)
+                    dest[di++] = '-';
+
+                int end = token.Start + token.Length;
+
+                if (token.Kind == TokenKind.Acronym)
+                {
+                    for (int i = token.Start; i < end; i++)
+                    {
+                        dest[di++] = src[i].ToAsciiUpper();
+                    }
+                }
+                else if (token.Kind == TokenKind.Number)
+                {
+                    for (int i = token.Start; i < end; i++)
+                    {
+                        dest[di++] = src[i];
+                    }
+                }
+                else
+                {
+                    dest[di++] = src[token.Start].ToAsciiUpper();
+
+                    for (int i = token.Start + 1; i < end; i++)
+                    {
+                        dest[di++] = src[i].ToAsciiLower();
+                    }
+                }
+
+                wroteToken = true;
+            }
+        });
+    }
+
 }
