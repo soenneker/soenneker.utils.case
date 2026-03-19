@@ -1,5 +1,6 @@
 using Soenneker.Extensions.Char;
 using System;
+using System.Buffers;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Soenneker.Utils.Case.Dtos;
@@ -12,6 +13,8 @@ namespace Soenneker.Utils.Case;
 /// </summary>
 public static partial class CaseUtil
 {
+    private static readonly SearchValues<char> VersionPrefixChars = SearchValues.Create("vV");
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsTokenChar(char c)
     {
@@ -43,7 +46,7 @@ public static partial class CaseUtil
 
         // Keep common version markers together: v2, v10, V3.
         // Other letter/digit boundaries still split (e.g., X + 509).
-        if ((first == 'v' || first == 'V') && start + 1 < len && input[start + 1].IsDigitFast())
+        if (VersionPrefixChars.Contains(first) && start + 1 < len && input[start + 1].IsDigitFast())
         {
             index += 2;
             while (index < len && input[index].IsDigitFast())
