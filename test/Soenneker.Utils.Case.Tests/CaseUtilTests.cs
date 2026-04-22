@@ -1,11 +1,10 @@
 using AwesomeAssertions;
-using Xunit;
 
 namespace Soenneker.Utils.Case.Tests;
 
 public sealed class CaseUtilTests
 {
-    [Fact]
+    [Test]
     public void KebabToCamel_EmptyString_ReturnsEmpty()
     {
         string result = CaseUtil.ToCamel("");
@@ -13,7 +12,7 @@ public sealed class CaseUtilTests
         result.Should().BeEmpty();
     }
 
-    [Fact]
+    [Test]
     public void KebabToCamel_SingleWord_ReturnsSameWord()
     {
         string result = CaseUtil.ToCamel("hello");
@@ -21,7 +20,7 @@ public sealed class CaseUtilTests
         result.Should().Be("hello");
     }
 
-    [Fact]
+    [Test]
     public void KebabToCamel_NoDashes_ReturnsSameString()
     {
         string result = CaseUtil.ToCamel("helloworld");
@@ -29,7 +28,7 @@ public sealed class CaseUtilTests
         result.Should().Be("helloworld");
     }
 
-    [Fact]
+    [Test]
     public void KebabToCamel_TwoWords_ReturnsCamelCase()
     {
         string result = CaseUtil.ToCamel("hello-world");
@@ -37,7 +36,7 @@ public sealed class CaseUtilTests
         result.Should().Be("helloWorld");
     }
 
-    [Fact]
+    [Test]
     public void KebabToCamel_MultipleWords_ReturnsCamelCase()
     {
         string result = CaseUtil.ToCamel("this-is-a-test");
@@ -45,7 +44,7 @@ public sealed class CaseUtilTests
         result.Should().Be("thisIsATest");
     }
 
-    [Fact]
+    [Test]
     public void KebabToCamel_LeadingDash_CapitalizesFirstWord()
     {
         string result = CaseUtil.ToCamel("-hello");
@@ -53,7 +52,7 @@ public sealed class CaseUtilTests
         result.Should().Be("hello");
     }
 
-    [Fact]
+    [Test]
     public void KebabToCamel_TrailingDash_IgnoresTrailingDash()
     {
         string result = CaseUtil.ToCamel("hello-");
@@ -61,7 +60,7 @@ public sealed class CaseUtilTests
         result.Should().Be("hello");
     }
 
-    [Fact]
+    [Test]
     public void KebabToCamel_ConsecutiveDashes_HandlesCorrectly()
     {
         string result = CaseUtil.ToCamel("hello--world");
@@ -69,7 +68,7 @@ public sealed class CaseUtilTests
         result.Should().Be("helloWorld");
     }
 
-    [Fact]
+    [Test]
     public void KebabToCamel_AlreadyUpperCase_PreservesCase()
     {
         string result = CaseUtil.ToCamel("HELLO-WORLD");
@@ -77,7 +76,7 @@ public sealed class CaseUtilTests
         result.Should().Be("helloWorld");
     }
 
-    [Fact]
+    [Test]
     public void KebabToCamel_MixedCase_CapitalizesAfterDash()
     {
         string result = CaseUtil.ToCamel("Hello-World");
@@ -85,7 +84,7 @@ public sealed class CaseUtilTests
         result.Should().Be("helloWorld");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_EmptyString_ReturnsEmpty()
     {
         string result = CaseUtil.ToKebab("");
@@ -93,7 +92,7 @@ public sealed class CaseUtilTests
         result.Should().BeEmpty();
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_SingleLowercaseWord_ReturnsSameWord()
     {
         string result = CaseUtil.ToKebab("hello");
@@ -101,7 +100,7 @@ public sealed class CaseUtilTests
         result.Should().Be("hello");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_NoUppercase_ReturnsSameString()
     {
         string result = CaseUtil.ToKebab("helloworld");
@@ -109,7 +108,7 @@ public sealed class CaseUtilTests
         result.Should().Be("helloworld");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_SimpleCamelCase_ReturnsKebabCase()
     {
         string result = CaseUtil.ToKebab("helloWorld");
@@ -117,7 +116,7 @@ public sealed class CaseUtilTests
         result.Should().Be("hello-world");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_MultipleWords_ReturnsKebabCase()
     {
         string result = CaseUtil.ToKebab("thisIsATest");
@@ -125,7 +124,7 @@ public sealed class CaseUtilTests
         result.Should().Be("this-is-a-test");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_PascalCase_ReturnsKebabCase()
     {
         string result = CaseUtil.ToKebab("HelloWorld");
@@ -133,7 +132,7 @@ public sealed class CaseUtilTests
         result.Should().Be("hello-world");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_Acronym_HandlesCorrectly()
     {
         string result = CaseUtil.ToKebab("parseHTMLDocument");
@@ -141,7 +140,7 @@ public sealed class CaseUtilTests
         result.Should().Be("parse-html-document");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_AcronymAtStart_HandlesCorrectly()
     {
         string result = CaseUtil.ToKebab("HTMLParser");
@@ -149,7 +148,7 @@ public sealed class CaseUtilTests
         result.Should().Be("html-parser");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_AcronymAtEnd_HandlesCorrectly()
     {
         string result = CaseUtil.ToKebab("parseHTML");
@@ -157,7 +156,7 @@ public sealed class CaseUtilTests
         result.Should().Be("parse-html");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_ConsecutiveUppercase_HandlesAcronyms()
     {
         string result = CaseUtil.ToKebab("getURLValue");
@@ -165,7 +164,7 @@ public sealed class CaseUtilTests
         result.Should().Be("get-url-value");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_SingleUppercaseLetter_ReturnsLowercase()
     {
         string result = CaseUtil.ToKebab("A");
@@ -173,7 +172,7 @@ public sealed class CaseUtilTests
         result.Should().Be("a");
     }
 
-    [Fact]
+    [Test]
     public void CamelToKebab_AllUppercase_ReturnsAllLowercase()
     {
         string result = CaseUtil.ToKebab("ABC");
@@ -181,7 +180,7 @@ public sealed class CaseUtilTests
         result.Should().Be("abc");
     }
 
-    [Fact]
+    [Test]
     public void RoundTrip_KebabToCamelToKebab_ReturnsOriginal()
     {
         const string original = "hello-world-test";
@@ -191,7 +190,7 @@ public sealed class CaseUtilTests
         kebab.Should().Be(original);
     }
 
-    [Fact]
+    [Test]
     public void RoundTrip_CamelToKebabToCamel_ReturnsOriginal()
     {
         const string original = "helloWorldTest";
