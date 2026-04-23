@@ -200,12 +200,12 @@ public sealed class CaseUtilTests
         camel.Should().Be(original);
     }
 
-    [Theory]
-    [InlineData("", "")]
-    [InlineData("a", "a")]
-    [InlineData("hello", "hello")]
-    [InlineData("hello-world", "helloWorld")]
-    [InlineData("one-two-three", "oneTwoThree")]
+    [Test]
+    [Arguments("", "")]
+    [Arguments("a", "a")]
+    [Arguments("hello", "hello")]
+    [Arguments("hello-world", "helloWorld")]
+    [Arguments("one-two-three", "oneTwoThree")]
     public void KebabToCamel_Theory_ReturnsExpected(string input, string expected)
     {
         string result = CaseUtil.ToCamel(input);
@@ -213,12 +213,12 @@ public sealed class CaseUtilTests
         result.Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData("", "")]
-    [InlineData("a", "a")]
-    [InlineData("hello", "hello")]
-    [InlineData("helloWorld", "hello-world")]
-    [InlineData("oneTwoThree", "one-two-three")]
+    [Test]
+    [Arguments("", "")]
+    [Arguments("a", "a")]
+    [Arguments("hello", "hello")]
+    [Arguments("helloWorld", "hello-world")]
+    [Arguments("oneTwoThree", "one-two-three")]
     public void CamelToKebab_Theory_ReturnsExpected(string input, string expected)
     {
         string result = CaseUtil.ToKebab(input);
