@@ -6,6 +6,9 @@ using System.Runtime.CompilerServices;
 
 namespace Soenneker.Utils.Case;
 
+/// <summary>
+/// Represents the case util.
+/// </summary>
 public static partial class CaseUtil
 {
     /// <summary>
