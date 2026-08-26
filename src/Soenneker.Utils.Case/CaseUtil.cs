@@ -133,11 +133,11 @@ public static partial class CaseUtil
             return string.Empty;
 
         int outputLength = charCount + tokenCount - 1;
-        var state = (Source: input.ToString(), Separator: separator);
+        var state = new SeparatedState(input, separator);
 
         return string.Create(outputLength, state, static (dest, st) =>
         {
-            ReadOnlySpan<char> src = st.Source.AsSpan();
+            ReadOnlySpan<char> src = st.Source;
             var di = 0;
             var idx = 0;
             var wroteToken = false;
@@ -165,11 +165,11 @@ public static partial class CaseUtil
             return string.Empty;
 
         int outputLength = charCount + tokenCount - 1;
-        var state = (Source: input.ToString(), Separator: separator);
+        var state = new SeparatedState(input, separator);
 
         return string.Create(outputLength, state, static (dest, st) =>
         {
-            ReadOnlySpan<char> src = st.Source.AsSpan();
+            ReadOnlySpan<char> src = st.Source;
             var di = 0;
             var idx = 0;
             var wroteToken = false;
@@ -196,9 +196,9 @@ public static partial class CaseUtil
         if (charCount == 0)
             return string.Empty;
 
-        return string.Create(charCount, input.ToString(), static (dest, source) =>
+        return string.Create(charCount, input, static (dest, source) =>
         {
-            ReadOnlySpan<char> src = source.AsSpan();
+            ReadOnlySpan<char> src = source;
             var di = 0;
             var idx = 0;
 
@@ -257,11 +257,11 @@ public static partial class CaseUtil
 
         int outputLength = charCount + tokenCount - 1;
 
-        (string Source, CultureInfo Culture) state = (Source: input.ToString(), Culture: culture);
+        var state = new TitleState(input, culture);
 
         return string.Create(outputLength, state, static (dest, st) =>
         {
-            ReadOnlySpan<char> src = st.Source.AsSpan();
+            ReadOnlySpan<char> src = st.Source;
             CultureInfo ci = st.Culture;
 
             var di = 0;
@@ -313,9 +313,9 @@ public static partial class CaseUtil
         if (tokenCount == 0)
             return string.Empty;
 
-        return string.Create(charCount, input.ToString(), static (dest, source) =>
+        return string.Create(charCount, input, static (dest, source) =>
         {
-            ReadOnlySpan<char> src = source.AsSpan();
+            ReadOnlySpan<char> src = source;
             var di = 0;
             var idx = 0;
 
@@ -356,9 +356,9 @@ public static partial class CaseUtil
         if (tokenCount == 0)
             return string.Empty;
 
-        return string.Create(charCount, input.ToString(), static (dest, source) =>
+        return string.Create(charCount, input, static (dest, source) =>
         {
-            ReadOnlySpan<char> src = source.AsSpan();
+            ReadOnlySpan<char> src = source;
             var di = 0;
             var idx = 0;
             var tokenIndex = 0;
@@ -404,9 +404,9 @@ public static partial class CaseUtil
 
         int outputLength = charCount + tokenCount - 1;
 
-        return string.Create(outputLength, input.ToString(), static (dest, source) =>
+        return string.Create(outputLength, input, static (dest, source) =>
         {
-            ReadOnlySpan<char> src = source.AsSpan();
+            ReadOnlySpan<char> src = source;
             var di = 0;
             var idx = 0;
             var wroteToken = false;
