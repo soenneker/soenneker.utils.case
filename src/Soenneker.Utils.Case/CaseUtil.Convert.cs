@@ -14,6 +14,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to kebab-case.
     /// </summary>
+    /// <returns>Converts any supported input casing to kebab-case.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToKebab(ReadOnlySpan<char> input)
     {
@@ -23,6 +24,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to snake_case.
     /// </summary>
+    /// <returns>Converts any supported input casing to snake_case.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToSnake(ReadOnlySpan<char> input)
     {
@@ -32,6 +34,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to UPPER_SNAKE_CASE.
     /// </summary>
+    /// <returns>Converts any supported input casing to UPPER_SNAKE_CASE.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToUpperSnake(ReadOnlySpan<char> input)
     {
@@ -41,6 +44,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to dot.case.
     /// </summary>
+    /// <returns>Converts any supported input casing to dot.case.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToDot(ReadOnlySpan<char> input)
     {
@@ -50,6 +54,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to flatcase.
     /// </summary>
+    /// <returns>Converts any supported input casing to flatcase.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToFlat(ReadOnlySpan<char> input)
     {
@@ -59,6 +64,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to path/case.
     /// </summary>
+    /// <returns>Converts any supported input casing to path/case.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToPath(ReadOnlySpan<char> input)
     {
@@ -68,6 +74,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to space case.
     /// </summary>
+    /// <returns>Converts any supported input casing to space case.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToSpace(ReadOnlySpan<char> input)
     {
@@ -77,6 +84,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to Train-Case.
     /// </summary>
+    /// <returns>Converts any supported input casing to Train-Case.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToTrain(ReadOnlySpan<char> input)
     {
@@ -86,6 +94,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to PascalCase.
     /// </summary>
+    /// <returns>Converts any supported input casing to PascalCase.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToPascal(ReadOnlySpan<char> input)
     {
@@ -95,6 +104,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to camelCase.
     /// </summary>
+    /// <returns>Converts any supported input casing to camelCase.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToCamel(ReadOnlySpan<char> input)
     {
@@ -104,6 +114,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to a title-cased phrase.
     /// </summary>
+    /// <returns>Converts any supported input casing to a title-cased phrase.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToTitle(ReadOnlySpan<char> input, CultureInfo? culture = null)
     {
@@ -113,6 +124,7 @@ public static partial class CaseUtil
     /// <summary>
     /// Converts any supported input casing to a title-cased phrase.
     /// </summary>
+    /// <returns>Converts any supported input casing to a title-cased phrase.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ToTitle(string? value, CultureInfo? culture = null)
     {
@@ -126,6 +138,7 @@ public static partial class CaseUtil
     /// Normalizes kebab-case by collapsing dash runs and trimming leading/trailing dashes.
     /// Keeps non-dash chars unchanged.
     /// </summary>
+    /// <returns>Normalizes kebab-case by collapsing dash runs and trimming leading/trailing dashes. Keeps non-dash chars unchanged.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string NormalizeKebab(ReadOnlySpan<char> input)
     {
