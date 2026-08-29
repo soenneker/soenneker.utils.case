@@ -22,19 +22,19 @@ All conversions use a single tokenizer internally, then format into the target c
 
 ### Core methods
 
-- `ToKebab(ReadOnlySpan<char>)`
-- `ToSnake(ReadOnlySpan<char>)`
-- `ToUpperSnake(ReadOnlySpan<char>)`
-- `ToDot(ReadOnlySpan<char>)`
-- `ToFlat(ReadOnlySpan<char>)`
-- `ToPath(ReadOnlySpan<char>)`
-- `ToSpace(ReadOnlySpan<char>)`
-- `ToTrain(ReadOnlySpan<char>)`
-- `ToPascal(ReadOnlySpan<char>)`
-- `ToCamel(ReadOnlySpan<char>)`
-- `ToTitle(ReadOnlySpan<char>, CultureInfo? culture = null)`
-- `ToTitle(string? value, CultureInfo? culture = null)`
-- `NormalizeKebab(ReadOnlySpan<char>)`
+- `ToKebab(ReadOnlySpan<char>)` - Lowercase words joined with `-`.
+- `ToSnake(ReadOnlySpan<char>)` - Lowercase words joined with `_`.
+- `ToUpperSnake(ReadOnlySpan<char>)` - Uppercase words joined with `_`.
+- `ToDot(ReadOnlySpan<char>)` - Lowercase words joined with `.`.
+- `ToFlat(ReadOnlySpan<char>)` - Lowercase words with no separator.
+- `ToPath(ReadOnlySpan<char>)` - Lowercase words joined with `/`.
+- `ToSpace(ReadOnlySpan<char>)` - Lowercase words joined with spaces.
+- `ToTrain(ReadOnlySpan<char>)` - Title-style words joined with `-`.
+- `ToPascal(ReadOnlySpan<char>)` - PascalCase while preserving recognized acronyms.
+- `ToCamel(ReadOnlySpan<char>)` - camelCase while preserving recognized acronyms after the first word.
+- `ToTitle(ReadOnlySpan<char>, CultureInfo? culture = null)` - Title-style words separated by spaces using the requested culture.
+- `ToTitle(string? value, CultureInfo? culture = null)` - String overload of `ToTitle`; null input is handled without requiring a span.
+- `NormalizeKebab(ReadOnlySpan<char>)` - Trims leading/trailing dashes and collapses repeated dashes without retokenizing or changing character casing.
 
 ### Example
 
