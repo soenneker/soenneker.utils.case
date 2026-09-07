@@ -142,8 +142,12 @@ public static partial class CaseUtil
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string NormalizeKebab(ReadOnlySpan<char> input)
     {
+        input = input.Trim('-');
         if (input.Length == 0)
             return string.Empty;
+
+        if (input.IndexOf("--") < 0)
+            return input.ToString();
 
         var len = 0;
         var prevWasDash = true;
@@ -166,12 +170,6 @@ public static partial class CaseUtil
             len++;
             prevWasDash = false;
         }
-
-        if (len > 0 && prevWasDash)
-            len--;
-
-        if (len <= 0)
-            return string.Empty;
 
         return string.Create(len, input, static (dest, src) =>
         {
@@ -197,8 +195,6 @@ public static partial class CaseUtil
                 prevWasDash = false;
             }
 
-            if (di > 0 && dest[di - 1] == '-')
-                di--;
         });
     }
 }
